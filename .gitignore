@@ -1,0 +1,38 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+.env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Build
+build/
+dist/
+
+# Large model / AI files
+*.pt
+*.pth
+*.onnx
+*.pb
+*.weights
+*.h5
+*.ckpt
+*.bin
+*.dat
+
+# Upload or temp folders
+upload/
+uploads/
+temp/
+tmp/
