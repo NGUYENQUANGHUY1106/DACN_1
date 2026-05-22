@@ -30,6 +30,7 @@ dist/
 *.ckpt
 *.bin
 *.dat
+*.env
 
 # Upload or temp folders
 upload/

@@ -1,30 +1,37 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM
-import torch
+import os
+from groq import Groq
 
-# Load model và tokenizer
-model_id = "VietAI/gpt-neo-1.3B-vietnamese-news"
 
-tokenizer = AutoTokenizer.from_pretrained(model_id)
+def chat_response(user_message: str) -> str:
+    api_key = os.getenv("GROQ_API_KEY", "").strip()
+    model_name = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile").strip()
 
-# CPU không hỗ trợ float16 → dùng float32
-# device_map="auto" gây lỗi 'disk' khi OFFLOAD → tắt
-model = AutoModelForCausalLM.from_pretrained(
-    model_id,
-    dtype=torch.float32
-).to("cpu")
+    if not api_key:
+        return "Chưa cấu hình GROQ_API_KEY."
 
-# Hàm chat
-def chat_response(prompt):
-    inputs = tokenizer(prompt, return_tensors="pt").to("cpu")
-    with torch.no_grad():
-        outputs = model.generate(
-            **inputs,
-            max_new_tokens=150,
-            do_sample=True,
-            top_k=50,
-            top_p=0.95,
-            temperature=0.7,
-            pad_token_id=tokenizer.eos_token_id
+    if not user_message.strip():
+        return "Bạn chưa nhập nội dung."
+
+    try:
+        client = Groq(api_key=api_key)
+
+        response = client.chat.completions.create(
+            model=model_name,
+            temperature=0.4,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "Bạn là trợ lý AI. Hãy trả lời ngắn gọn, dễ hiểu, bằng tiếng Việt."
+                },
+                {
+                    "role": "user",
+                    "content": user_message
+                }
+            ]
         )
-    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    return response.replace(prompt, "").strip()
+
+        text = response.choices[0].message.content
+        return text.strip() if text else "Không có phản hồi từ AI."
+
+    except Exception as e:
+        return f"Lỗi Groq API: {e}"
